@@ -43,13 +43,55 @@ public enum SelectedBarVerticalAlignment {
     case bottom
 }
 
+open class LayerBackGround: UIView {
+    
+    let gradientLayer = CAGradientLayer.init()
+    
+    func setColor(_ color1: UIColor, _ color2: UIColor) {
+        gradientLayer.colors = [color1.cgColor, color2.cgColor]
+        gradientLayer.startPoint = CGPoint(x: 1, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+        gradientLayer.frame = self.bounds
+    }
+    
+    public override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.layer.addSublayer(gradientLayer)
+        self.layer.masksToBounds = true
+    }
+    
+    required public init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    open override func layoutSubviews() {
+        super.layoutSubviews()
+        gradientLayer.frame = self.bounds
+    }
+    
+    open override func layoutSublayers(of layer: CALayer) {
+        super.layoutSublayers(of: layer)
+        gradientLayer.frame = self.bounds
+    }
+}
+
 open class ButtonBarView: UICollectionView {
+    
+    open lazy var selectedBackView: LayerBackGround = { [unowned self] in
+        let bg = LayerBackGround(frame: CGRect(x: 0, y: 0, width: 0, height: self.frame.size.height))
+        bg.setColor(layerColor1, layerColor2)
+        bg.layer.zPosition = 9999
+        return bg
+    }()
 
     open lazy var selectedBar: UIView = { [unowned self] in
         let bar  = UIView(frame: CGRect(x: 0, y: self.frame.size.height - CGFloat(self.selectedBarHeight), width: 0, height: CGFloat(self.selectedBarHeight)))
         bar.layer.zPosition = 9999
         return bar
     }()
+    
+    internal var layerColor1: UIColor = UIColor(red: 25.0 / 255.0, green: 133.0 / 255.0, blue: 1, alpha: 0)
+    internal var layerColor2: UIColor = UIColor(red: 27.0 / 255.0, green: 134.0 / 255.0, blue: 1, alpha: 0.1)
 
     internal var selectedBarHeight: CGFloat = 4 {
         didSet {
@@ -63,11 +105,13 @@ open class ButtonBarView: UICollectionView {
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         addSubview(selectedBar)
+        addSubview(selectedBackView)
     }
 
     public override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {
         super.init(frame: frame, collectionViewLayout: layout)
         addSubview(selectedBar)
+        addSubview(selectedBackView)
     }
 
     open func moveTo(index: Int, animated: Bool, swipeDirection: SwipeDirection, pagerScroll: PagerScroll) {
@@ -94,6 +138,14 @@ open class ButtonBarView: UICollectionView {
         } else {
             toFrame = layoutAttributesForItem(at: IndexPath(item: toIndex, section: 0))!.frame
         }
+        
+        
+        var targetBGFrame = fromFrame
+        targetBGFrame.size.height = selectedBackView.frame.size.height
+        targetBGFrame.size.width += (toFrame.size.width - fromFrame.size.width) * progressPercentage
+        targetBGFrame.origin.x += (toFrame.origin.x - fromFrame.origin.x) * progressPercentage
+
+        selectedBackView.frame = CGRect(x: targetBGFrame.origin.x, y: selectedBackView.frame.origin.y, width: targetBGFrame.size.width, height: selectedBackView.frame.size.height)
 
         var targetFrame = fromFrame
         targetFrame.size.height = selectedBar.frame.size.height
@@ -114,11 +166,28 @@ open class ButtonBarView: UICollectionView {
     }
 
     open func updateSelectedBarPosition(_ animated: Bool, swipeDirection: SwipeDirection, pagerScroll: PagerScroll) {
-        var selectedBarFrame = selectedBar.frame
+        var selectedBGFrame = selectedBackView.frame
 
         let selectedCellIndexPath = IndexPath(item: selectedIndex, section: 0)
         let attributes = layoutAttributesForItem(at: selectedCellIndexPath)
         let selectedCellFrame = attributes!.frame
+
+        selectedBGFrame.size.width = selectedCellFrame.size.width
+        selectedBGFrame.origin.x = selectedCellFrame.origin.x
+
+        if animated {
+            UIView.animate(withDuration: 0.3, animations: { [weak self] in
+                self?.selectedBackView.frame = selectedBGFrame
+            })
+        } else {
+            selectedBackView.frame = selectedBGFrame
+        }
+        
+        var selectedBarFrame = selectedBar.frame
+
+//        let selectedCellIndexPath = IndexPath(item: selectedIndex, section: 0)
+//        let attributes = layoutAttributesForItem(at: selectedCellIndexPath)
+//        let selectedCellFrame = attributes!.frame
 
         updateContentOffset(animated: animated, pagerScroll: pagerScroll, toFrame: selectedCellFrame, toIndex: (selectedCellIndexPath as NSIndexPath).row)
 
@@ -169,6 +238,10 @@ open class ButtonBarView: UICollectionView {
     }
 
     private func updateSelectedBarYPosition() {
+        var selectedBGFrame = selectedBackView.frame
+        selectedBGFrame.origin.y = 0
+        selectedBackView.frame = selectedBGFrame
+        
         var selectedBarFrame = selectedBar.frame
 
         switch selectedBarVerticalAlignment {

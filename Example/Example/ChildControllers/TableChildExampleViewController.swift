@@ -35,7 +35,7 @@ class TableChildExampleViewController: UITableViewController, IndicatorInfoProvi
         self.itemInfo = itemInfo
         super.init(style: style)
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
