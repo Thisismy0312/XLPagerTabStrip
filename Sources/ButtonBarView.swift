@@ -90,8 +90,16 @@ open class ButtonBarView: UICollectionView {
         return bar
     }()
     
-    internal var layerColor1: UIColor = UIColor(red: 25.0 / 255.0, green: 133.0 / 255.0, blue: 1, alpha: 0)
-    internal var layerColor2: UIColor = UIColor(red: 27.0 / 255.0, green: 134.0 / 255.0, blue: 1, alpha: 0.1)
+    internal var layerColor1: UIColor = UIColor(red: 25.0 / 255.0, green: 133.0 / 255.0, blue: 1, alpha: 0) {
+        didSet {
+            selectedBackView.setColor(layerColor1, layerColor2)
+        }
+    }
+    internal var layerColor2: UIColor = UIColor(red: 27.0 / 255.0, green: 134.0 / 255.0, blue: 1, alpha: 0.1) {
+        didSet {
+            selectedBackView.setColor(layerColor1, layerColor2)
+        }
+    }
 
     internal var selectedBarHeight: CGFloat = 4 {
         didSet {
