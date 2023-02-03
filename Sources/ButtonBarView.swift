@@ -87,6 +87,12 @@ open class ButtonBarView: UICollectionView {
     open lazy var selectedBar: UIView = { [unowned self] in
         let bar  = UIView(frame: CGRect(x: 0, y: self.frame.size.height - CGFloat(self.selectedBarHeight), width: 0, height: CGFloat(self.selectedBarHeight)))
         bar.layer.zPosition = 9999
+        if #available(iOS 11.0, *) {
+            bar.layer.masksToBounds = true
+            bar.layer.cornerRadius = self.selectedBarTopRadius
+            bar.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        }
+        
         return bar
     }()
     
@@ -98,6 +104,12 @@ open class ButtonBarView: UICollectionView {
     internal var layerColor2: UIColor = UIColor(red: 27.0 / 255.0, green: 134.0 / 255.0, blue: 1, alpha: 0.1) {
         didSet {
             selectedBackView.setColor(layerColor1, layerColor2)
+        }
+    }
+    
+    internal var selectedBarTopRadius: CGFloat = 1 {
+        didSet {
+            updateSelectedBarYPosition()
         }
     }
 
@@ -263,6 +275,12 @@ open class ButtonBarView: UICollectionView {
 
         selectedBarFrame.size.height = selectedBarHeight
         selectedBar.frame = selectedBarFrame
+        
+        if #available(iOS 11.0, *) {
+            selectedBar.layer.masksToBounds = true
+            selectedBar.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+            selectedBar.layer.cornerRadius = self.selectedBarTopRadius
+        }
     }
 
     override open func layoutSubviews() {

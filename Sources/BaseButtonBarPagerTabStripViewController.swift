@@ -89,6 +89,7 @@ open class BaseButtonBarPagerTabStripViewController<ButtonBarCellType: UICollect
         buttonBarView.selectedBar.backgroundColor = settings.style.selectedBarBackgroundColor
         buttonBarView.selectedBarVerticalAlignment = settings.style.selectedBarVerticalAlignment
         buttonBarView.selectedBarHeight = settings.style.selectedBarHeight
+        buttonBarView.selectedBarTopRadius = settings.style.selectedBarTopRadius
         // register button bar item cell
         switch buttonBarItemSpec! {
         case .nibFile(let nibName, let bundle, _):
